@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+
+  <title>Rock Paper Scissors — Unblocked Game (School-Safe) | StaticQuasar931</title>
+  <meta name="description" content="Play Rock Paper Scissors unblocked, school-safe, and working at school. Fullscreen, smooth performance, no ads, and quick load. Brought to you by StaticQuasar931." />
+
+  <!-- Canonical / Open Graph -->
+  <link rel="canonical" href="https://sites.google.com/view/staticquasar931/gm3z/rock-paper-scissors" />
+  <meta property="og:title" content="Rock Paper Scissors — Unblocked (School-Safe)" />
+  <meta property="og:description" content="Fullscreen Rock Paper Scissors unblocked, no ads, school-safe. Works on school networks and Chromebooks." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sites.google.com/view/staticquasar931/gm3z/rock-paper-scissors" />
+  <meta property="og:image" content="https://sites.google.com/view/staticquasar931/images/og/rock-paper-scissors.jpg" />
+
+  <!-- Favicons (Switcher-ready) -->
+  <link id="favicon" rel="icon" type="image/png" href="https://www.google.com/s2/favicons?domain=sites.google.com&sz=64" />
+  <link rel="apple-touch-icon" href="https://www.google.com/s2/favicons?domain=sites.google.com&sz=180" />
+
+  <!-- Fonts (system stack for speed) -->
+  <style>
+    :root{
+      --bg:#0b0b0b;--fg:#eaeaea;--muted:#a0a0a0;--accent:#5ee1ff;--accent-2:#7bffb5;
+      --panel:#121212;--panel-2:#171717;--shadow:0 10px 30px rgba(0,0,0,.3);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg,var(--panel),var(--bg));
+      color:var(--fg); font:400 16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+      overflow:hidden;
+    }
+    a{color:var(--accent)}
+    /* Fullscreen game container */
+    #stage{
+      position:fixed; inset:0; display:grid; place-items:center;
+    }
+    .webgl-content, #gameContainer, canvas{
+      width:100%; height:100%;
+    }
+    /* Play button overlay */
+    #playOverlay{
+      position:absolute; inset:0; display:grid; place-items:center; z-index:5;
+      background:radial-gradient(1200px 600px at 50% 20%, rgba(94,225,255,.08), transparent 70%);
+      pointer-events:none;
+    }
+    #run_game{
+      pointer-events:auto;
+      min-width: min(720px, 92vw);
+      padding:22px 28px; font-size:clamp(18px,2.6vw,28px); font-weight:700; letter-spacing:.2px;
+      border:0; border-radius:16px; background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#041018; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease, filter .15s ease;
+    }
+    #run_game:hover{ transform:translateY(-2px) }
+    #run_game:active{ transform:translateY(0) scale(.99) }
+
+    /* Top-left Static Menu (twinkle + close) */
+    #staticMenu{
+      position:fixed; top:14px; left:14px; z-index:20; display:flex; flex-direction:column; gap:10px;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,.35));
+    }
+    .menuCard{
+      background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; padding:10px 14px; display:flex; align-items:center; gap:10px;
+      position:relative; min-width: 280px;
+    }
+    .menuCard h3{margin:0; font-size:15px}
+    .menuCard small{color:var(--muted)}
+    .twinkle{
+      position:absolute; inset:-1px; border-radius:16px; pointer-events:none;
+      background:
+        radial-gradient(200px 40px at 10% 20%, rgba(255,255,255,.18), transparent 60%),
+        radial-gradient(120px 30px at 80% 40%, rgba(255,255,255,.12), transparent 60%);
+      animation:twinkle 6s ease-in-out infinite;
+    }
+    @keyframes twinkle{
+      0%,100%{opacity:.65; filter:hue-rotate(0deg)}
+      50%{opacity:.95; filter:hue-rotate(35deg)}
+    }
+    .closeBtn{
+      position:absolute; top:6px; right:6px; width:28px; height:28px; border-radius:999px; border:1px solid rgba(255,255,255,.15);
+      display:grid; place-items:center; cursor:pointer; background:rgba(255,255,255,.05); color:var(--fg);
+      font-weight:800; line-height:1; user-select:none;
+    }
+    .closeBtn:hover{ background:rgba(255,255,255,.1) }
+
+    /* Bottom-right rotating icons (Google Form / Instagram) */
+    #rotator{
+      position:fixed; right:14px; bottom:14px; z-index:20; width:70px; height:70px;
+      display:grid; place-items:center; border-radius:14px; overflow:hidden;
+      background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px);
+      box-shadow:var(--shadow);
+    }
+    #rotator a{display:block; width:100%; height:100%}
+    #rotator img{width:100%; height:100%; object-fit:cover; display:block; transition:opacity .5s ease}
+
+    /* Settings (top-right) */
+    #settingsBtn{
+      position:fixed; top:14px; right:14px; z-index:20;
+      width:46px; height:46px; border-radius:12px; display:grid; place-items:center; cursor:pointer;
+      background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px);
+    }
+    #settingsBtn svg{width:24px; height:24px}
+    #settings{
+      position:fixed; top:68px; right:14px; z-index:21; width:min(420px,92vw);
+      background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px; display:none; gap:12px;
+      box-shadow:var(--shadow);
+    }
+    #settings label{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    #settings input[type="checkbox"]{width:22px; height:22px}
+
+    /* Smooth fades */
+    .hidden{display:none}
+    .fade-in{animation:fade .25s ease forwards}
+    .fade-out{animation:fade .25s ease reverse forwards}
+    @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+    /* Accessibility hint */
+    #hint{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.1); color:#fff;
+      padding:8px 12px; border-radius:999px; font-size:13px; opacity:.9;
+    }
+
+    /* Hidden SEO block (visually hidden but accessible) */
+    .sr-only{
+      position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none !important; transition:none !important}
+    }
+  </style>
+
+  <!-- Unity Loader (kept; ads/branding removed) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ferialoken937373/clever@c91366f7f0a51bfccdb966a5cabcc39add3807ac/projects/rockpaperscissors/exercise/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/ferialoken937373/clever@c91366f7f0a51bfccdb966a5cabcc39add3807ac/projects/rockpaperscissors/exercise/UnityProgress.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ferialoken937373/clever@c91366f7f0a51bfccdb966a5cabcc39add3807ac/projects/rockpaperscissors/exercise/2.7.js"></script>
+
+  <script>
+    // Leave warning
+    window.onbeforeunload = () => "Are you sure you want to leave? Your session will reset.";
+
+    // Favicon switcher
+    const favicons = [
+      "https://www.google.com/s2/favicons?domain=sites.google.com&sz=64",
+      "https://www.google.com/s2/favicons?domain=classroom.google.com&sz=64",
+      "https://www.google.com/s2/favicons?domain=drive.google.com&sz=64",
+      "https://www.google.com/s2/favicons?domain=docs.google.com&sz=64"
+    ];
+    let favIx = 0;
+    function setFavicon(src){
+      const link = document.getElementById("favicon");
+      if(link) link.href = src;
+    }
+    function cycleFavicon(){ favIx = (favIx+1)%favicons.length; setFavicon(favicons[favIx]); }
+    let faviconTimer = null;
+    function startFaviconAuto(){ if(!faviconTimer){ faviconTimer = setInterval(cycleFavicon, 30000); } }
+    function stopFaviconAuto(){ if(faviconTimer){ clearInterval(faviconTimer); faviconTimer = null; } }
+    document.addEventListener("visibilitychange", () => { if(document.hidden){ stopFaviconAuto(); } else { startFaviconAuto(); } });
+
+    // UI toggler via Y + U + I (simultaneously)
+    const pressed = new Set();
+    function setUIVisible(v){
+      const ids = ["staticMenu","rotator","settingsBtn","hint"];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.style.display = v ? "" : "none";
+      });
+    }
+    document.addEventListener("keydown",(e)=>{
+      ["y","u","i"].includes(e.key.toLowerCase()) && pressed.add(e.key.toLowerCase());
+      if(pressed.has("y") && pressed.has("u") && pressed.has("i")){
+        const anyVisible = ["staticMenu","rotator","settingsBtn","hint"].some(id=>{
+          const el = document.getElementById(id); return el && el.style.display !== "none";
+        });
+        setUIVisible(!anyVisible);
+      }
+    });
+    document.addEventListener("keyup",(e)=>{ pressed.delete(e.key.toLowerCase()); });
+
+    // Settings panel controls
+    function toggleSettings(){
+      const panel = document.getElementById("settings");
+      if(!panel) return;
+      panel.style.display = panel.style.display === "grid" ? "none" : "grid";
+      if(panel.style.display === "grid"){ panel.classList.add("fade-in"); }
+    }
+    function bindSettings(){
+      const chkAutoFav = document.getElementById("autoFav");
+      const btnStepFav = document.getElementById("stepFav");
+      const chkHints = document.getElementById("showHints");
+      const btnHideUI = document.getElementById("hideUI");
+
+      if(chkAutoFav){
+        chkAutoFav.addEventListener("change", e => e.target.checked ? startFaviconAuto() : stopFaviconAuto());
+      }
+      if(btnStepFav){ btnStepFav.addEventListener("click", cycleFavicon); }
+      if(chkHints){
+        chkHints.addEventListener("change", e=>{
+          const hint = document.getElementById("hint");
+          if(hint) hint.style.display = e.target.checked ? "" : "none";
+        });
+      }
+      if(btnHideUI){ btnHideUI.addEventListener("click", ()=> setUIVisible(false)); }
+    }
+
+    // Static Menu hide/return after 3 minutes
+    let restoreTimer = null;
+    function scheduleMenuRestore(){
+      clearTimeout(restoreTimer);
+      restoreTimer = setTimeout(()=> {
+        const menu = document.getElementById("staticMenu");
+        if(menu && menu.style.display === "none") menu.style.display = "";
+      }, 3 * 60 * 1000);
+    }
+
+    // Rotator (Google Form / Instagram)
+    const rotatorItems = [
+      { href: "https://sites.google.com/view/staticquasar931/google-form", img: "https://i.imgur.com/8f4m5rK.png", alt: "Suggest a Game (Google Form)" },
+      { href: "https://www.instagram.com/freeschoolgamepage/", img: "https://i.imgur.com/0n3d3qV.png", alt: "Follow on Instagram" }
+    ];
+    let rotIx = 0;
+    function rotateIcon(){
+      rotIx = (rotIx+1) % rotatorItems.length;
+      const a = document.querySelector("#rotator a");
+      const img = document.querySelector("#rotator img");
+      if(a && img){
+        img.style.opacity = 0;
+        setTimeout(()=>{
+          a.href = rotatorItems[rotIx].href;
+          img.src = rotatorItems[rotIx].img;
+          img.alt = rotatorItems[rotIx].alt;
+          img.style.opacity = 1;
+        }, 300);
+      }
+    }
+
+    // Unity boot
+    let gameInstance = null;
+    function bootGame(){
+      if(gameInstance) return;
+      const btn = document.getElementById("run_game");
+      btn.disabled = true;
+      try{
+        // UnityLoader is provided by 2.7.js
+        gameInstance = UnityLoader.instantiate(
+          "gameContainer",
+          "https://cdn.jsdelivr.net/gh/ferialoken937373/clever@8424f74721ca8bb284b77c2b9f232b94171fe2e2/projects/rockpaperscissors/exercise/2.7.json",
+          { onProgress: UnityProgress, Module: { onRuntimeInitialized: function(){ UnityProgress(gameInstance, "complete"); } } }
+        );
+        // Hide overlay smoothly after click
+        const overlay = document.getElementById("playOverlay");
+        if(overlay){ overlay.classList.add("fade-out"); setTimeout(()=> overlay.style.display="none", 240); }
+      }catch(err){
+        btn.disabled = false;
+        console.error("Unity boot failed:", err);
+        alert("Sorry, the game couldn't start. Please reload the page.");
+      }
+    }
+
+    // Init
+    window.addEventListener("load", ()=>{
+      // Set up Play button
+      document.getElementById("run_game").addEventListener("click", bootGame);
+
+      // Rotator
+      const a = document.querySelector("#rotator a");
+      const img = document.querySelector("#rotator img");
+      a.href = rotatorItems[0].href; img.src = rotatorItems[0].img; img.alt = rotatorItems[0].alt;
+      setInterval(rotateIcon, 7000);
+
+      // Settings
+      document.getElementById("settingsBtn").addEventListener("click", toggleSettings);
+      bindSettings();
+
+      // Favicon auto-rotate default ON
+      document.getElementById("autoFav").checked = true;
+      startFaviconAuto();
+
+      // Resize canvas on orientation changes
+      addEventListener("orientationchange", ()=> {
+        const gc = document.getElementById("gameContainer");
+        if(gc){ gc.style.height = window.innerHeight + "px"; gc.style.width = window.innerWidth + "px"; }
+      });
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Static Menu (top-left) -->
+  <div id="staticMenu">
+    <div class="menuCard" id="menuPrimary">
+      <div class="twinkle" aria-hidden="true"></div>
+      <div style="display:flex; gap:10px; align-items:center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2l2.3 4.7L20 8l-4 3.9.9 5.6L12 15.8 7.1 17.5 8 11.9 4 8l5.7-1.3L12 2z" stroke="currentColor"/>
+        </svg>
+        <div>
+          <h3 style="margin:0">More Unblocked Games by Static</h3>
+          <small><a rel="noopener" target="_blank" href="https://sites.google.com/view/staticquasar931/gm3z">Open game list</a></small>
+        </div>
+      </div>
+      <div class="closeBtn" title="Hide for 3 minutes" onclick="document.getElementById('staticMenu').style.display='none'; scheduleMenuRestore();">×</div>
+    </div>
+
+    <div class="menuCard" id="menuLabel">
+      <div style="display:flex; flex-direction:column">
+        <strong>Rock Paper Scissors — <em>alternate (unblocked)</em></strong>
+        <small>Tip: press <kbd>Y</kbd>+<kbd>U</kbd>+<kbd>I</kbd> together to hide or show UI.</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings (top-right) -->
+  <div id="settingsBtn" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.05.05a2 2 0 1 1-2.83 2.83l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1.5.9l-.02.05a2 2 0 1 1-3.0 0l-.02-.05A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86-.34l-.05.05a2 2 0 1 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.9-1.5l-.05-.02a2 2 0 1 1 0-3.0l.05-.02A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.05-.05A2 2 0 1 1 7.04 4.2l.05.05A1.7 1.7 0 0 0 9 4.6c.56 0 1.1-.22 1.5-.6l.02-.05a2 2 0 1 1 3.0 0l.02.05c.4.38.94.6 1.5.6.6 0 1.17-.24 1.6-.66l.05-.05a2 2 0 1 1 2.83 2.83l-.05.05c-.42.43-.66 1-.66 1.6 0 .56.22 1.1.6 1.5l.05.02c.5.27.9.9.9 1.5z"/>
+    </svg>
+  </div>
+  <div id="settings" class="fade-in" style="display:none; grid-template-columns:1fr;">
+    <label><span>Auto-rotate favicon (every 30s)</span> <input id="autoFav" type="checkbox" /></label>
+    <button id="stepFav" style="padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:var(--fg); cursor:pointer;">Cycle favicon now</button>
+    <label><span>Show helper hint</span> <input id="showHints" type="checkbox" checked /></label>
+    <button id="hideUI" style="padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:var(--fg); cursor:pointer;">Hide all UI</button>
+    <small style="color:var(--muted)">Reminder: Press <strong>Y+U+I</strong> to toggle UI anytime. No ads. No Classroom6x branding.</small>
+  </div>
+
+  <!-- Bottom-right Rotator -->
+  <div id="rotator">
+    <a target="_blank" rel="noopener" href="#">
+      <img src="" alt="Promo" />
+    </a>
+  </div>
+
+  <!-- Helper hint -->
+  <div id="hint">Press <strong>Y+U+I</strong> to hide/show UI • Click “Play Now” to start</div>
+
+  <!-- GAME STAGE -->
+  <div id="stage" role="main" aria-label="Game area">
+    <div class="webgl-content">
+      <div id="gameContainer" style="position:relative; background:#000;"></div>
+    </div>
+    <div id="playOverlay" class="fade-in">
+      <button id="run_game" aria-label="Start Game">CLICK TO PLAY NOW</button>
+    </div>
+  </div>
+
+  <!-- Hidden SEO content (~200+ words, includes required keywords and internal links) -->
+  <div class="sr-only">
+    <h1>Rock Paper Scissors Unblocked — School-Safe Game by StaticQuasar931</h1>
+    <p>
+      Enjoy a clean, ad-free Rock Paper Scissors experience that works at school, on Chromebooks, and on most
+      networks. This page is designed to be school-safe and distraction-free so you can quickly load the game,
+      play in fullscreen, and get smooth performance. If your school blocks many gaming sites, this unblocked
+      version aims to stay lightweight and compatible. You can return to the main list of unblocked games at the
+      StaticQuasar931 hub for more choices and backups:
+      <a href="https://sites.google.com/view/staticquasar931/gm3z">StaticQuasar931 Game List</a>.
+    </p>
+    <p>
+      Keywords: rock paper scissors unblocked, rock paper scissors game at school, school-safe rock paper scissors,
+      working at school, unblocked g@me, unbl0cked games, staticquasar, staticquasar931, static 931, staticq,
+      staticq931, 931 games, Chromebook games, quick load, fullscreen, play now, no ads, safe for school.
+      Looking for more? Try our suggestion form here:
+      <a href="https://sites.google.com/view/staticquasar931/google-form">Suggest a game to add</a>,
+      or follow our updates on Instagram:
+      <a href="https://www.instagram.com/freeschoolgamepage/">@freeschoolgamepage</a>.
+      This page uses a favicon switcher and UI toggles to blend into academic environments. Press the Y+U+I keys
+      at the same time to hide or show on-screen menus. All features focus on reliability, compatibility, and speed
+      for students who need unblocked access without intrusive ads or popups.
+    </p>
+  </div>
+
+</body>
+</html>
